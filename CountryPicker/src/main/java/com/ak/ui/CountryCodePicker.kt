@@ -10,19 +10,19 @@ import android.widget.LinearLayout
 import androidx.annotation.FontRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.FragmentActivity
 import com.ak.countrypicker.R
 import com.ak.countrypicker.databinding.LayoutCodePickerBinding
 import com.ak.fragment.BottomCountryPickerFragment
 import com.ak.model.CountryItem
-import androidx.fragment.app.FragmentActivity
 import com.ak.utils.Constants.list
+import com.ak.utils.CountryCodeHelper
 import com.ak.utils.setCountryList
-import java.util.*
+import java.util.Locale
 
 
 class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
-    LinearLayout(context, attributeSet),
-    BottomCountryPickerFragment.OnClickItemListener {
+    LinearLayout(context, attributeSet), BottomCountryPickerFragment.OnClickItemListener {
     private var binding: LayoutCodePickerBinding? = null
     private var fragment: BottomCountryPickerFragment? = null
     private var color: Int = 0
@@ -37,18 +37,15 @@ class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
 
     init {
         binding = LayoutCodePickerBinding.inflate(
-            LayoutInflater.from(context),
-            this, true
+            LayoutInflater.from(context), this, true
         )
 
         context.theme.obtainStyledAttributes(
-            attributeSet,
-            R.styleable.CountryCodePicker,
-            0, 0
+            attributeSet, R.styleable.CountryCodePicker, 0, 0
         ).apply {
             try {
                 showFlag = getBoolean(R.styleable.CountryCodePicker_showFlag, true)
-                defaultCountry = getString(R.styleable.CountryCodePicker_defaultNameCode).toString()
+                defaultCountry = getString(R.styleable.CountryCodePicker_defaultNameCode) ?: ""
                 excludedCountries =
                     getString(R.styleable.CountryCodePicker_excludedCountries).toString()
                 showCodeName = getBoolean(R.styleable.CountryCodePicker_showNameCode, true)
@@ -90,6 +87,9 @@ class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
 
         if (defaultCountry.isNotEmpty()) {
             setDefaultCountry(defaultCountry)
+        } else {
+            val countryCode = CountryCodeHelper.getDetectedCountry(context, "in")
+            setDefaultCountry(countryCode)
         }
 
         if (excludedCountries.isNotEmpty()) {
@@ -108,11 +108,11 @@ class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
     override fun onCountryItemClick(item: CountryItem?) {
         item?.flagImage?.let { binding?.ivFlag?.setImageResource(it) }
         item?.phoneCode?.let { binding?.tvCode?.text = "+$it" }
-        item?.codeName?.let { binding?.tvNameCode?.text = "($it)" }
+        item?.codeName?.let { binding?.tvNameCode?.text = "($it)".uppercase() }
         fragment?.dismiss()
     }
 
-    private fun setContentColor(color: Int) {
+    fun setContentColor(color: Int) {
         if (Build.VERSION.SDK_INT < 23) {
             binding?.tvCode?.setTextColor(color)
             binding?.tvNameCode?.setTextColor(color)
@@ -128,29 +128,30 @@ class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
         binding?.tvNameCode?.typeface = ResourcesCompat.getFont(context, font)
     }
 
-    private fun hideFlag() {
+    fun hideFlag() {
         binding?.ivFlag?.visibility = View.GONE
     }
 
-    private fun hideCodeName() {
+    fun hideCodeName() {
         binding?.tvNameCode?.visibility = View.GONE
     }
 
-    private fun hideDropDownArrow() {
+    fun hideDropDownArrow() {
         binding?.ivArrow?.visibility = View.GONE
     }
 
-    private fun setDefaultCountry(codeName: String) {
+    fun setDefaultCountry(codeName: String) {
         for (item in list) {
             if (item.codeName?.equals(codeName) == true) {
                 item.flagImage?.let { binding?.ivFlag?.setImageResource(it) }
                 item.phoneCode?.let { binding?.tvCode?.text = "+$it" }
-                item.codeName.let { binding?.tvNameCode?.text = "($it)" }
+                item.codeName.let { binding?.tvNameCode?.text = "($it)".uppercase() }
+                break
             }
         }
     }
 
-    private fun setExcludedCountries(excludedCountries: String) {
+    fun setExcludedCountries(excludedCountries: String) {
         println("excludedCountries==$excludedCountries")
         this.excludedCountries = excludedCountries.lowercase(Locale.getDefault())
         println("this.excludedCountries==${this.excludedCountries}")
@@ -178,7 +179,7 @@ class CountryCodePicker(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    private fun setArrowSize(arrowSize: Int) {
+    fun setArrowSize(arrowSize: Int) {
         if (arrowSize > 0) {
             val params = binding?.ivArrow?.layoutParams as LayoutParams
             params.width = arrowSize

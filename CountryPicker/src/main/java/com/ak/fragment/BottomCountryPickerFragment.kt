@@ -1,14 +1,21 @@
 package com.ak.fragment
 
+import android.app.Dialog
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.FrameLayout
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ak.countrypicker.databinding.FragmentCountryPickerBinding
 import com.ak.adapter.CountryListAdapter
+import com.ak.countrypicker.R
 import com.ak.model.CountryItem
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class BottomCountryPickerFragment : BottomSheetDialogFragment(),
@@ -17,6 +24,12 @@ class BottomCountryPickerFragment : BottomSheetDialogFragment(),
     private var listener: OnClickItemListener? = null
     private var countryList = ArrayList<CountryItem>()
     private var countryListAdapter: CountryListAdapter? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.AppBottomSheetDialogTheme)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
